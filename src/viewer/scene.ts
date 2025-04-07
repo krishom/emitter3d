@@ -5,6 +5,7 @@ import { Particles } from './particles';
 import { Prisms } from './prisms';
 import { Grid } from './grid';
 import { Camera } from './camera';
+import { BirthdayText } from './text';
 
 export type Dot = {
   seed: number;
@@ -31,6 +32,8 @@ export class Scene extends THREE.Scene {
   readonly prisms: Prisms;
   readonly particles: Particles;
   readonly grid: Grid;
+  readonly birthdayText: BirthdayText;
+  private envMap: THREE.CubeTexture;
 
   readonly prismOptions = {
     saturation: 0.5,
@@ -63,6 +66,66 @@ export class Scene extends THREE.Scene {
     super();
     this.fog = new THREE.FogExp2(0x000000, 0.003);
     this.history = new History(allocateDot, 300);
+    console.log('scene constructor');
+
+    this.birthdayText = new BirthdayText((mesh) => {
+      this.add(mesh);
+    });
+
+    // Load environment map for reflections
+    const cubeTextureLoader = new THREE.CubeTextureLoader();
+    this.envMap = cubeTextureLoader.load([
+      'threejs.org/examples/textures/cube/Park3Med/px.jpg',
+      'threejs.org/examples/textures/cube/Park3Med/nx.jpg',
+      'threejs.org/examples/textures/cube/Park3Med/py.jpg',
+      'threejs.org/examples/textures/cube/Park3Med/ny.jpg',
+      'threejs.org/examples/textures/cube/Park3Med/pz.jpg',
+      'threejs.org/examples/textures/cube/Park3Med/nz.jpg',
+    ]);
+    this.environment = this.envMap;
+
+    // Add colorful point lights
+    const colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff];
+    const lightPositions = [
+      new THREE.Vector3(20, 20, 20),
+      new THREE.Vector3(-20, 20, -20),
+      new THREE.Vector3(20, -20, -20),
+      new THREE.Vector3(-20, -20, 20),
+      new THREE.Vector3(0, 30, 0)
+    ];
+
+    colors.forEach((color, index) => {
+      const light = new THREE.PointLight(color, 2, 50);
+      light.position.copy(lightPositions[index]);
+      this.add(light);
+    });
+
+    // Add text-specific lights
+    const textLightPositions = [
+      new THREE.Vector3(0, 25, 0),    // Above text
+      new THREE.Vector3(15, 15, -15), // Front right
+      new THREE.Vector3(-15, 15, -15), // Front left
+      new THREE.Vector3(15, -15, -15), // Bottom right
+      new THREE.Vector3(-15, -15, -15), // Bottom left
+      new THREE.Vector3(0, 0, -25)    // Direct front
+    ];
+
+    textLightPositions.forEach((position, index) => {
+      const light = new THREE.PointLight(0xffffff, 3, 30);
+      light.position.copy(position);
+      this.add(light);
+    });
+
+    // Add spotlight for dramatic effect
+    const spotlight = new THREE.SpotLight(0xffffff, 5, 50, Math.PI / 4, 0.5);
+    spotlight.position.set(0, 30, 0);
+    spotlight.target.position.set(0, 15, -20);
+    this.add(spotlight);
+    this.add(spotlight.target);
+
+    // Add ambient light for overall illumination
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+    this.add(ambientLight);
 
     this.particles = new Particles(80000);
     this.add(this.particles);
@@ -71,7 +134,7 @@ export class Scene extends THREE.Scene {
     this.add(this.prisms);
 
     this.grid = new Grid();
-    this.add(this.grid);
+    // this.add(this.grid);
 
     this.particles.mat.setCameraClip(camera.near, camera.far);
   }
@@ -81,6 +144,7 @@ export class Scene extends THREE.Scene {
       this.stateNeedsUpdate = false;
       this.updateState();
     }
+    this.birthdayText.update(Date.now());
   }
 
   updateState(): void {

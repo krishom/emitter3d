@@ -206,7 +206,7 @@ export const initialCoreState: CoreState = {
   showGrid: true,
   stepsPerSecond: 90,
   stepsPerUpdate: 1,
-  cameraRevolve: true,
+  cameraRevolve: false,
   floorTransition: false,
 };
 

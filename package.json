@@ -23,13 +23,13 @@
     "gl-matrix": "^3.3.0",
     "preact": "^10.5.13",
     "stats.js": "^0.17.0",
-    "three": "^0.127.0"
+    "three": "^0.162.0"
   },
   "devDependencies": {
     "@types/gl-matrix": "^2.4.5",
     "@types/jest": "^26.0.22",
     "@types/stats.js": "^0.17.0",
-    "@types/three": "^0.126.2",
+    "@types/three": "^0.162.0",
     "jest": "^26.6.3",
     "ts-jest": "^26.5.4",
     "ts-loader": "^7.0.5",

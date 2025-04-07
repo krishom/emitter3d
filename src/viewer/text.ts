@@ -7,23 +7,25 @@ export class BirthdayText {
   private textMesh: THREE.Mesh | null = null;
   private material: THREE.MeshPhysicalMaterial;
   private onTextReady: ((mesh: THREE.Mesh) => void) | null = null;
+  private color = new THREE.Color();
+  private hue = 0;
 
   constructor(onTextReady?: (mesh: THREE.Mesh) => void) {
     this.onTextReady = onTextReady || null;
 
     // Create a glossy glass material
     this.material = new THREE.MeshPhysicalMaterial({
-      color: 0xffd700, // Gold color
-      metalness: 1.0, // Increased from 0.9 for maximum metallic look
-      roughness: 0.05, // Decreased from 0.1 for more shininess
+      color: 0xffd700, // Initial gold color
+      metalness: 1.0, // Maximum metallic look
+      roughness: 0.05, // Very shiny
       transmission: 0.0, // No transmission for solid gold look
-      thickness: 0.5,
-      envMapIntensity: 2.0, // Increased from 1.0 for stronger reflections
+      thickness: 0.5, // Depth of the letters
+      envMapIntensity: 2.0, // Strong reflections
       clearcoat: 1.0, // Full clearcoat for extra shine
-      clearcoatRoughness: 0.05, // Decreased from 0.1 for smoother clearcoat
+      clearcoatRoughness: 0.05, // Smooth clearcoat
       emissive: 0xffd700, // Gold emissive glow
       emissiveIntensity: 0.3, // Increased from 0.2 for stronger glow
-      specularIntensity: 1.0, // Added for stronger specular highlights
+      specularIntensity: 1.0, // Specular highlights
       specularColor: 0xffffff, // White specular highlights
       reflectivity: 1.0 // Maximum reflectivity
     });
@@ -33,7 +35,6 @@ export class BirthdayText {
     const text = "Happy Birthday!";
 
     // Load the font and create text geometry
-    // https://threejs.org/examples/fonts/helvetiker_regular.typeface.json
     loader.load('threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font: Font) => {
       const geometry = new TextGeometry(text, {
         font: font,
@@ -60,9 +61,23 @@ export class BirthdayText {
     });
   }
 
+  getMesh(): THREE.Mesh | null {
+    return this.textMesh;
+  }
+
   update(time: number): void {
     if (this.textMesh) {
+      // Update rotation
       this.textMesh.rotation.x = Math.sin(time * 0.0005) * 0.2;
+
+      // Update color through rainbow gradient
+      this.hue = (this.hue + 0.001) % 1.0;
+      this.color.setHSL(this.hue, 1.0, 0.5);
+
+      // Update material colors
+      this.material.color.copy(this.color);
+      this.material.emissive.copy(this.color).multiplyScalar(0.3);
+      this.material.specularColor.copy(this.color);
     }
   }
 }
